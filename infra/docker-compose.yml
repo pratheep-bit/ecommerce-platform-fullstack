@@ -28,7 +28,7 @@ services:
 
   frontend:
     build:
-      context: ./website-new
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:80"
