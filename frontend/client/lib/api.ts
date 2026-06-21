@@ -83,7 +83,7 @@ class ApiService {
     }
 
     // Product endpoints
-    async getProducts(params?: { skip?: number; limit?: number; category?: string }) {
+    async getProducts(params?: { skip?: number; limit?: number; category?: string; sort?: string }) {
         return this.client.get('/api/v1/products', { params });
     }
 
@@ -207,5 +207,80 @@ class ApiService {
     }
 }
 
+class AdminApiService {
+    private client: AxiosInstance;
+
+    constructor() {
+        this.client = axios.create({
+            baseURL: API_BASE_URL,
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        this.client.interceptors.request.use(
+            (config: InternalAxiosRequestConfig) => {
+                const token = localStorage.getItem('admin_access_token');
+                if (token && config.headers) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+                return config;
+            },
+            (error) => Promise.reject(error)
+        );
+
+        this.client.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                // Admin refresh logic can be omitted for simplicity or implemented similar to user
+                return Promise.reject(error);
+            }
+        );
+    }
+
+    async login(email: string, password: string) {
+        return this.client.post('/api/v1/admin/login', { email, password });
+    }
+
+    async getAnalytics() {
+        return this.client.get('/api/v1/admin/analytics');
+    }
+
+    async getOrders(params?: { page?: number; page_size?: number; status?: string }) {
+        return this.client.get('/api/v1/admin/orders', { params });
+    }
+
+    async getOrder(id: string) {
+        return this.client.get(`/api/v1/admin/orders/${id}`);
+    }
+
+    async updateOrderStatus(id: string, status: string) {
+        return this.client.put(`/api/v1/admin/orders/${id}`, { status });
+    }
+
+    async shipOrder(id: string, dimensions: any) {
+        return this.client.post(`/api/v1/admin/orders/${id}/ship`, dimensions);
+    }
+
+    async refundOrder(id: string, amount?: number, reason?: string) {
+        return this.client.post(`/api/v1/admin/orders/${id}/refund`, { amount, reason });
+    }
+
+    async getProducts(params?: { page?: number; page_size?: number; include_inactive?: boolean }) {
+        return this.client.get('/api/v1/admin/products', { params });
+    }
+
+    async createProduct(data: any) {
+        return this.client.post('/api/v1/admin/products', data);
+    }
+
+    async updateProduct(id: string, data: any) {
+        return this.client.put(`/api/v1/admin/products/${id}`, data);
+    }
+
+    async deleteProduct(id: string) {
+        return this.client.delete(`/api/v1/admin/products/${id}`);
+    }
+}
+
 export const apiService = new ApiService();
+export const adminApiService = new AdminApiService();
 export default apiService;

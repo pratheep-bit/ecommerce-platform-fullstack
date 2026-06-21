@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../lib/api';
 
 // Product hooks
-export const useProducts = (params?: { skip?: number; limit?: number; category?: string }) => {
+export const useProducts = (params?: { skip?: number; limit?: number; category?: string; sort?: string }) => {
     return useQuery({
         queryKey: ['products', params],
         queryFn: () => apiService.getProducts(params),
