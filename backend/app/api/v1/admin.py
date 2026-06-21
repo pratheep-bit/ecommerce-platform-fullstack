@@ -36,7 +36,7 @@ from app.core import (
     logger
 )
 from app.core.order_state import validate_transition, get_allowed_transitions
-from app.integrations import create_shipment
+from app.services.shiprocket_service import create_shipment
 from app.services.razorpay_service import razorpay_service
 from app.api.deps import admin_login_rate_limiter
 
@@ -150,7 +150,7 @@ async def get_order_admin(
     query = (
         select(Order)
         .options(
-            selectinload(Order.items),
+            selectinload(Order.items).selectinload(OrderItem.product),
             selectinload(Order.payment),
             selectinload(Order.shipment)
         )
