@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Star, ArrowLeft, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,9 +9,13 @@ import { toast } from "sonner";
 
 export default function Index() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart } = useCart();
   const { isLoggedIn } = useAuth();
-  const { data: productsResponse, isLoading } = useProducts();
+  
+  const category = searchParams.get('category') || undefined;
+  const sort = searchParams.get('sort') || undefined;
+  const { data: productsResponse, isLoading } = useProducts({ category, sort } as any);
 
   // Find the featured product by slug from the product list
   // productsResponse.data = axios response.data = { items: [...], total, page, page_size }
@@ -400,6 +404,97 @@ export default function Index() {
             <button className="px-6 py-3 bg-white hover:bg-opacity-90 transition-colors">
               <ArrowRight className="w-5 h-5 text-[#765341]" />
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Shop All Products Section */}
+      <section className="py-16 md:py-24 px-4 bg-[#FDFBF7]">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+            <div>
+              <h2 className="font-serif text-3xl md:text-4xl text-[#765341] font-light">
+                Shop All Products
+              </h2>
+            </div>
+            
+            <div className="flex gap-4">
+              <select 
+                value={searchParams.get('category') || ""}
+                className="border border-[#F3E9DC] bg-white px-4 py-2 text-[#765341] rounded-md outline-none focus:border-[#9A6A51]"
+                onChange={(e) => {
+                  const newParams = new URLSearchParams(searchParams);
+                  if (e.target.value) newParams.set('category', e.target.value);
+                  else newParams.delete('category');
+                  setSearchParams(newParams);
+                }}
+              >
+                <option value="">All Categories</option>
+                <option value="malas">Malas</option>
+                <option value="bracelets">Bracelets</option>
+                <option value="idols">Idols</option>
+                <option value="accessories">Accessories</option>
+              </select>
+
+              <select 
+                value={searchParams.get('sort') || ""}
+                className="border border-[#F3E9DC] bg-white px-4 py-2 text-[#765341] rounded-md outline-none focus:border-[#9A6A51]"
+                onChange={(e) => {
+                  const newParams = new URLSearchParams(searchParams);
+                  if (e.target.value) newParams.set('sort', e.target.value);
+                  else newParams.delete('sort');
+                  setSearchParams(newParams);
+                }}
+              >
+                <option value="">Sort By</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="newest">Newest First</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {isLoading ? (
+              <div className="col-span-full flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-[#9A6A51]" />
+              </div>
+            ) : (() => {
+              const items = productsResponse?.data?.items || (Array.isArray(productsResponse?.data) ? productsResponse.data : []);
+              
+              if (items.length === 0) {
+                return (
+                  <div className="col-span-full text-center py-12 text-gray-500">
+                    No products found matching your criteria.
+                  </div>
+                );
+              }
+
+              return items.map((product: any) => (
+                <div key={product.id} className="group cursor-pointer">
+                  <div className="aspect-square bg-[#E8DDD0] rounded-md overflow-hidden mb-4 relative">
+                    {product.images && product.images[0] ? (
+                      <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#9A6A51]">No Image</div>
+                    )}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product, 1)
+                          .then(() => toast.success("Added to cart"))
+                          .catch(() => toast.error("Failed to add to cart"));
+                      }}
+                      className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 text-[#765341] px-4 py-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white text-sm font-medium w-[80%]"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                  <h3 className="font-medium text-[#765341] truncate">{product.name}</h3>
+                  <p className="text-[#9A6A51] text-sm mt-1">₹{product.price}</p>
+                </div>
+              ));
+            })()}
           </div>
         </div>
       </section>
