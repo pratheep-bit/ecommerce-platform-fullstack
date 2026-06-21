@@ -141,10 +141,14 @@ class ProductBase(BaseSchema):
     price: Decimal
     mrp: Decimal
     stock: int
+    category: str = "other"
+    weight: Decimal = Decimal("0.5")
+    length: Decimal = Decimal("10.0")
+    breadth: Decimal = Decimal("10.0")
+    height: Decimal = Decimal("10.0")
     images: List[str] = []
     specifications: dict = {}
     is_active: bool = True
-
 
 class ProductResponse(ProductBase):
     """Product response schema."""
@@ -182,6 +186,11 @@ class ProductUpdate(BaseSchema):
     price: Optional[Decimal] = None
     mrp: Optional[Decimal] = None
     stock: Optional[int] = None
+    category: Optional[str] = None
+    weight: Optional[Decimal] = None
+    length: Optional[Decimal] = None
+    breadth: Optional[Decimal] = None
+    height: Optional[Decimal] = None
     images: Optional[List[str]] = None
     specifications: Optional[dict] = None
     is_active: Optional[bool] = None
@@ -236,6 +245,7 @@ class OrderItemResponse(BaseSchema):
     quantity: int
     price: Decimal
     total: Decimal
+    product: Optional[ProductResponse] = None
 
 
 class OrderCreate(BaseModel):
