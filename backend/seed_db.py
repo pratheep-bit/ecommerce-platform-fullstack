@@ -10,6 +10,7 @@ from sqlalchemy import select, text
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+async def seed_data():
     async with async_session_maker() as session:
         # Check existing product by slug
         result = await session.execute(
